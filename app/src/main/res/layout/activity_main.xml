@@ -1,148 +1,211 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    android:fillViewport="true">
+    android:background="#F6F8F5"
+    android:orientation="vertical">
 
+    <!-- 1. Top Navigation Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
         android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:padding="28dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="55dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🥬"
-            android:textSize="65sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="FreshBasket"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:layout_marginTop="12dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fresh groceries, delivered with care."
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="8dp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="45dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Welcome Back!"
-            android:textSize="27sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Login to continue shopping."
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="25dp" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Email Address"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etEmail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textEmailAddress" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Password"
-            android:layout_marginTop="18dp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:endIconMode="password_toggle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/tvForgotPassword"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Forgot Password?"
-            android:textColor="@color/primary"
-            android:textStyle="bold"
-            android:layout_gravity="end"
-            android:layout_marginTop="15dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogin"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:text="LOGIN"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginTop="25dp"
-            app:cornerRadius="14dp"
-            app:backgroundTint="@color/primary" />
-
+        <!-- Row 1: Original Title + Cart Button -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="25dp">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Don't have an account? "
-                android:textColor="@color/text_secondary" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvRegister"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FreshBasket"
+                    android:textColor="#2E7D32"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fresh groceries daily"
+                    android:textColor="#666666"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewCart"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Register"
-                android:textColor="@color/primary"
-                android:textStyle="bold" />
-
+                android:layout_height="38dp"
+                android:backgroundTint="#1B5E20"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="Cart"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- Row 2: Horizontal Search Bar (Above Group PIN & Recipes) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="8dp"
+            app:cardBackgroundColor="#F4F6F4"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#D5DDD5"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Search"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="#555555" />
+
+                <EditText
+                    android:id="@+id/etSearchProducts"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Search groceries or category..."
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="#222222"
+                    android:textColorHint="#888888"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/btnClearSearch"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Clear search"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:visibility="gone"
+                    app:tint="#777777" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Row 2: Compact Group PIN & Recipes Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSharedCartMode"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="Group PIN"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRecipes"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="Recipes"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 
-</ScrollView>
+    <!-- 2. Active Cart Mode Banner -->
+    <TextView
+        android:id="@+id/tvModeIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E8F5E9"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="6dp"
+        android:text="Mode: Personal Cart (Tap 'Group PIN' for Roommate Sync)"
+        android:textColor="#1B5E20"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <!-- Budget Control Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="2dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/tvBudgetStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Budget: Not Set"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSetBudget"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set Budget"
+            android:textColor="#2E7D32"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 3. Product Grid + Loading Spinner -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewProducts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="8dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="#2E7D32" />
+
+    </FrameLayout>
+
+</LinearLayout>

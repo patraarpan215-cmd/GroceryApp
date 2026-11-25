@@ -34,6 +34,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.activity.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -53,4 +54,7 @@ dependencies {
 
     // Work Manager
     implementation("androidx.work:work-runtime:2.9.0")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }

@@ -9,6 +9,8 @@ public class Product {
 
     private String ingredients;
 
+    private int shelfLifeDays;
+
     // Required empty constructor for Firebase
     public Product() {}
 
@@ -29,4 +31,12 @@ public class Product {
     public double getPrice() { return price; }
     public String getImageUrl() { return imageUrl; }
     public String getIngredients() { return ingredients; }
+
+    public int getShelfLifeDays() {
+        return shelfLifeDays > 0 ? shelfLifeDays : 7; // Default to 7 days if not set in Firebase
+    }
+
+    public void setShelfLifeDays(int shelfLifeDays) {
+        this.shelfLifeDays = shelfLifeDays;
+    }
 }

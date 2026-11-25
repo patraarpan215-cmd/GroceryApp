@@ -35,6 +35,18 @@ public class FirebaseHelper {
         void onError(String errorMessage);
     }
 
+    // Interface to return fetched recipes
+    public interface RecipeFetchCallback {
+        void onSuccess(List<com.example.grocery.models.Recipe> recipeList);
+        void onError(String errorMessage);
+    }
+
+    // Interface to return user's digital pantry items
+    public interface PantryFetchCallback {
+        void onSuccess(List<com.example.grocery.models.PantryItem> pantryList);
+        void onError(String errorMessage);
+    }
+
     // Constructor: Connects directly to Firebase services
     public FirebaseHelper() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -77,6 +89,75 @@ public class FirebaseHelper {
         cartRef.setValue(item)
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
+
+    // Add item to SharedCarts/{groupPin} if Group PIN is active, otherwise personal Carts/{userId}
+    public void addToCartWithPin(CartItem item, String groupPin, ActionCallback callback) {
+        if (auth.getCurrentUser() == null) {
+            if (callback != null) callback.onError("User is not logged in!");
+            return;
+        }
+
+        DatabaseReference cartRef;
+        if (groupPin != null && !groupPin.isEmpty()) {
+            cartRef = dbRef.child("SharedCarts").child(groupPin).child(item.getProductId());
+        } else {
+            String userId = auth.getCurrentUser().getUid();
+            cartRef = dbRef.child("Carts").child(userId).child(item.getProductId());
+        }
+
+        cartRef.setValue(item)
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) callback.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) callback.onError(e.getMessage());
+                });
+    }
+
+    // Remove item from SharedCarts/{groupPin} if Group PIN is active, otherwise personal Carts/{userId}
+    public void removeFromCartWithPin(String productId, String groupPin, ActionCallback callback) {
+        if (auth.getCurrentUser() == null) {
+            if (callback != null) callback.onError("User is not logged in!");
+            return;
+        }
+
+        DatabaseReference itemRef;
+        if (groupPin != null && !groupPin.isEmpty()) {
+            itemRef = dbRef.child("SharedCarts").child(groupPin).child(productId);
+        } else {
+            String userId = auth.getCurrentUser().getUid();
+            itemRef = dbRef.child("Carts").child(userId).child(productId);
+        }
+
+        itemRef.removeValue()
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) callback.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) callback.onError(e.getMessage());
+                });
+    }
+
+
+
+    public void removeFromCart(String productId, String groupPin, ActionCallback callback) {
+        DatabaseReference itemRef;
+        if (groupPin != null && !groupPin.isEmpty()) {
+            itemRef = dbRef.child("SharedCarts").child(groupPin).child(productId);
+        } else {
+            if (auth.getCurrentUser() == null) return;
+            String userId = auth.getCurrentUser().getUid();
+            itemRef = dbRef.child("Carts").child(userId).child(productId);
+        }
+
+        itemRef.removeValue()
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) callback.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) callback.onError(e.getMessage());
+                });
     }
 
     // 3. Register a new user account with Email and Password
@@ -289,7 +370,7 @@ public class FirebaseHelper {
         }
 
         String userId = auth.getCurrentUser().getUid();
-        List<String> productIds = recipe.getIngredientProductIds();
+        List<String> productIds = recipe.getIngredientIds();
 
         // Loop through the recipe's ingredient IDs
         for (String pId : productIds) {
@@ -300,6 +381,177 @@ public class FirebaseHelper {
         }
 
         callback.onSuccess();
+    }
+
+    // 4. Process Checkout: Calculate total, save order, and clear cart
+    public void processCheckout(ActionCallback callback) {
+        if (auth.getCurrentUser() == null) {
+            callback.onError("User is not logged in!");
+            return;
+        }
+
+        String userId = auth.getCurrentUser().getUid();
+        DatabaseReference cartRef = dbRef.child("Carts").child(userId);
+        DatabaseReference ordersRef = dbRef.child("Orders").child(userId);
+
+        // Read the cart exactly once
+        cartRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    callback.onError("Your cart is empty!");
+                    return;
+                }
+
+                double totalAmount = 0;
+                // We use a generic Object structure here to easily move the whole list of items
+                Object cartData = snapshot.getValue();
+
+                // Calculate the math (price * quantity) for the backend records if needed
+                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
+                    CartItem item = itemSnapshot.getValue(CartItem.class);
+                    if (item != null) {
+                        totalAmount += (item.getPrice() * item.getQuantity());
+                    }
+                }
+
+                // Generate a unique Order ID based on the current timestamp
+                String orderId = "order_" + System.currentTimeMillis();
+
+                // Save the whole cart data into the Orders node under this new Order ID
+                ordersRef.child(orderId).child("items").setValue(cartData);
+                ordersRef.child(orderId).child("orderTotal").setValue(totalAmount)
+                        .addOnSuccessListener(aVoid -> {
+                            // If order is successfully saved, DELETE the current cart
+                            cartRef.removeValue();
+                            callback.onSuccess();
+                        })
+                        .addOnFailureListener(e -> callback.onError(e.getMessage()));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onError(error.getMessage());
+            }
+        });
+    }
+
+    // 5. Add an item to a Shared Household Cart
+    public void addToSharedCart(String groupPin, CartItem item, ActionCallback callback) {
+        if (auth.getCurrentUser() == null) {
+            callback.onError("User is not logged in!");
+            return;
+        }
+
+        // We use the shared groupPin to route the data instead of the individual userId
+        DatabaseReference sharedCartRef = dbRef.child("SharedCarts").child(groupPin).child(item.getProductId());
+
+        sharedCartRef.setValue(item)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
+
+    // 6. Listen for real-time updates from Roommates
+// This allows the frontend to instantly refresh when someone else adds an item
+    public void listenToSharedCart(String groupPin, ValueEventListener listener) {
+        dbRef.child("SharedCarts").child(groupPin).addValueEventListener(listener);
+    }
+
+    // 4. Fetch all recipes from Firebase ("Recipes" node)
+    public void fetchRecipes(RecipeFetchCallback callback) {
+        dbRef.child("Recipes").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<com.example.grocery.models.Recipe> recipeList = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    com.example.grocery.models.Recipe recipe = ds.getValue(com.example.grocery.models.Recipe.class);
+                    if (recipe != null) {
+                        recipeList.add(recipe);
+                    }
+                }
+                callback.onSuccess(recipeList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onError(error.getMessage());
+            }
+        });
+    }
+
+    // 5. Recipe-to-Cart: Add all ingredients of a selected recipe to the active cart
+    public void addRecipeIngredientsToCart(List<String> ingredientIds, String groupPin, ActionCallback callback) {
+        if (ingredientIds == null || ingredientIds.isEmpty()) {
+            if (callback != null) callback.onError("No ingredients found in this recipe.");
+            return;
+        }
+
+        String userId = getCurrentUserId();
+        if (userId == null) {
+            if (callback != null) callback.onError("User not logged in!");
+            return;
+        }
+
+        dbRef.child("Products").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int addedCount = 0;
+                for (String prodId : ingredientIds) {
+                    Product product = snapshot.child(prodId).getValue(Product.class);
+                    if (product != null) {
+                        CartItem item = new CartItem(product.getId(), product.getName(), product.getPrice(), 1, userId);
+                        if (groupPin != null && !groupPin.isEmpty()) {
+                            dbRef.child("SharedCarts").child(groupPin).child(product.getId()).setValue(item);
+                        } else {
+                            dbRef.child("Carts").child(userId).child(product.getId()).setValue(item);
+                        }
+                        addedCount++;
+                    }
+                }
+                if (callback != null) {
+                    if (addedCount > 0) callback.onSuccess();
+                    else callback.onError("Matching products not found in catalog.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (callback != null) callback.onError(error.getMessage());
+            }
+        });
+    }
+
+    // 6. Zero-Waste Pantry Sync: Move checked-out items into "Pantry/{userId}" with expiry dates
+    public void syncCartToPantry(List<CartItem> purchasedItems, ActionCallback callback) {
+        String userId = getCurrentUserId();
+        if (userId == null || purchasedItems == null || purchasedItems.isEmpty()) return;
+
+        dbRef.child("Products").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long nowMillis = System.currentTimeMillis();
+                long oneDayMillis = 24L * 60L * 60L * 1000L;
+
+                for (CartItem cartItem : purchasedItems) {
+                    Product prod = snapshot.child(cartItem.getProductId()).getValue(Product.class);
+                    int shelfLifeDays = (prod != null) ? prod.getShelfLifeDays() : 5; // Default 5 days
+                    long expiryDateMillis = nowMillis + (shelfLifeDays * oneDayMillis);
+
+                    com.example.grocery.models.PantryItem pantryItem = new com.example.grocery.models.PantryItem(
+                            cartItem.getProductId(),
+                            cartItem.getProductName(),
+                            expiryDateMillis
+                    );
+                    dbRef.child("Pantry").child(userId).child(cartItem.getProductId()).setValue(pantryItem);
+                }
+                if (callback != null) callback.onSuccess();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (callback != null) callback.onError(error.getMessage());
+            }
+        });
     }
 }
 
