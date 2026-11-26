@@ -1,5 +1,6 @@
 package com.example.grocery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -36,9 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> loginUser());
 
         tvRegister.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Registration screen coming next!",
-                        Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
 
         tvForgotPassword.setOnClickListener(v ->
                 Toast.makeText(this,
